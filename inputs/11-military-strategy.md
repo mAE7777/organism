@@ -1,0 +1,5 @@
+Napoleon's corps system revolutionized warfare by distributing an army into self-sufficient units that could march independently but converge for battle. Each corps had its own infantry, cavalry, and artillery — a complete fighting force. This meant the army could cover more ground, forage more efficiently, and respond to contact from any direction. The genius was in the communication protocols, not the firepower.
+
+Clausewitz distinguished between strategy and tactics, but his deeper insight was friction: the gap between planned operations and reality. Fog of war isn't just about missing information — it's about information arriving too late, garbled, or in quantities that overwhelm decision-making. The best commanders built plans that tolerated degraded information rather than requiring perfect intelligence.
+
+Boyd's OODA loop (Observe, Orient, Decide, Act) reframes combat as a tempo game. The side that cycles through decisions faster forces the opponent into reactive postures. Speed of adaptation matters more than quality of any single decision.

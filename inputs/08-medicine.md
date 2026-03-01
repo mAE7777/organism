@@ -1,0 +1,5 @@
+The immune system doesn't just fight — it remembers. After encountering a pathogen, memory cells persist for years, enabling faster response to future exposure. This biological memory isn't stored in a single location; it's distributed across the lymphatic system, encoded in cell populations rather than central databases.
+
+Homeostasis is the body's constant negotiation between stability and responsiveness. Temperature, pH, blood sugar — each is held within narrow bands through feedback loops. But homeostasis isn't static equilibrium; it's dynamic balance maintained through continuous adjustment. The body is always slightly off-balance, always correcting.
+
+Triage in emergency medicine forces explicit prioritization: who needs care now, who can wait, who cannot be saved. The hardest skill isn't treating the sickest patient — it's accepting that finite resources mean some patients won't receive optimal care. Resource allocation under scarcity requires acknowledging trade-offs that feel morally intolerable.

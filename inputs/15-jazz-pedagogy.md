@@ -1,0 +1,5 @@
+Jazz education faces a fundamental tension: improvisation is spontaneous creation, yet it requires deep structural knowledge. Charlie Parker reportedly practiced scales and arpeggios for years before his breakthrough on "Cherokee." The vocabulary of bebop — enclosures, chromatic approaches, guide-tone lines — must be internalized so thoroughly that it becomes unconscious. You practice structure to transcend structure.
+
+The Aebersold play-along method democratized jazz training by providing backing tracks in every key and tempo. But its deeper contribution was normalizing solitary practice of an inherently collaborative art. Students could experiment with harmonic substitutions without the social pressure of a live rhythm section. The gap between private rehearsal and public performance is where most learning happens — and where most students get stuck.
+
+Ear training is jazz's most undervalued skill. Transcribing solos by ear — Coltrane's "Giant Steps," Miles's "So What" — trains pattern recognition that no theory book can replicate. You learn to hear intervals as emotional colors, not mathematical ratios. The ear leads; the fingers follow.

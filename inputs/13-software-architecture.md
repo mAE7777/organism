@@ -1,0 +1,5 @@
+Microservices solve organizational problems more than technical ones. Conway's Law predicts that system architecture mirrors communication structure, and the reverse is also true — you can use architecture to reshape how teams interact. Amazon's two-pizza teams weren't just about headcount; they were about creating ownership boundaries that mapped cleanly to service boundaries.
+
+The CAP theorem forces distributed systems to choose between consistency and availability during network partitions. But the practical lesson is subtler: most systems don't need global consistency. Event sourcing and CQRS accept eventual consistency in exchange for auditability and scalability. The write path and read path have different requirements — forcing them through the same model creates unnecessary coupling.
+
+Technical debt is misnamed. Real debt has known principal and interest rates. What most codebases accumulate is closer to entropy — disorder that compounds unpredictably. The cost isn't linear; it's the unexpected interaction between two shortcuts made years apart by different developers who never anticipated each other's existence.

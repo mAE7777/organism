@@ -1,0 +1,5 @@
+R0 (basic reproduction number) determines whether an outbreak grows or dies. If each infected person transmits to more than one other on average, cases grow exponentially. But R0 isn't a fixed property of a pathogen — it depends on population density, behavior, and immunity. SARS-CoV-2's R0 ranged from 2 to 6 depending on context. The same virus in different environments produces different epidemics.
+
+Contact tracing works by exploiting network structure. Most transmission follows a power-law distribution: a small number of superspreaders cause disproportionate infections. The 80/20 rule often applies — 20% of infected individuals cause 80% of secondary cases. Identifying and isolating these hub nodes has outsized impact compared to random interventions. The network topology matters more than the pathogen's biology.
+
+Herd immunity is a collective property that emerges from individual immunity. The threshold depends on R0: for measles (R0 ~15), roughly 93% of the population must be immune. Below that threshold, susceptible pockets form — clusters where outbreaks can sustain themselves. Immunity isn't just about individuals; it's about the gaps between them.

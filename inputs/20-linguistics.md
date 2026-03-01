@@ -1,0 +1,5 @@
+The Sapir-Whorf hypothesis, in its strong form, claims language determines thought. The weak form — that language influences cognition — has substantial evidence. Speakers of Guugu Yimithirr use cardinal directions instead of relative ones ("the cup is north of the plate"), and they maintain absolute spatial orientation even in unfamiliar buildings. The linguistic tool shapes the cognitive habit.
+
+Creole languages emerge when children grow up hearing a pidgin — a simplified contact language with no native speakers. The children spontaneously add grammatical complexity: tense markers, relative clauses, recursive embedding. This suggests an innate capacity for grammar that activates given minimal input. The language doesn't come from the environment alone; the children's brains complete it.
+
+Sound change follows regular patterns that early linguists mistook for chaos. Grimm's Law shows systematic consonant shifts from Proto-Indo-European to Germanic: p became f, t became th, k became h. Latin "pater" maps to English "father" through predictable transformation. Language evolution isn't random drift — it's constrained mutation along phonological pathways.

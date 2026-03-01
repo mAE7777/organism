@@ -1,0 +1,5 @@
+Attachment theory, developed by Bowlby and Ainsworth, shows that a child's earliest relationships create internal working models for all future connections. Secure attachment doesn't mean constant presence — it means predictable responsiveness. The child learns that distress signals produce comfort, which builds the confidence to explore independently. The paradox: children who feel safe leaving return more readily.
+
+Scaffolding in developmental psychology mirrors Vygotsky's zone of proximal development. You don't do tasks for children or leave them to struggle alone — you provide just enough support that they can succeed, then gradually withdraw it. A parent holding the back of a bicycle seat is scaffolding. The skill is knowing when to let go before the child notices.
+
+Repair matters more than perfection. Tronick's still-face experiments show that even good parent-child interactions involve misattunement about 70% of the time. What predicts healthy development isn't flawless responsiveness but the rhythm of rupture and repair — the consistent return to connection after disconnection.

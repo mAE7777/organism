@@ -1,0 +1,5 @@
+Wittgenstein's later work demolished his own earlier framework. The Tractatus sought a perfect logical language mapping reality; the Philosophical Investigations showed that meaning comes from use in context, not from correspondence to facts. The courage to destroy your own best work when evidence demands it is the rarest intellectual virtue.
+
+Hegel's dialectic — thesis, antithesis, synthesis — isn't a formula but a pattern of how understanding evolves. Every position generates its opposite, and the tension between them produces something neither could produce alone. Progress isn't linear accumulation; it's the productive collision of contradictions.
+
+Negative capability, Keats's term: the capacity to remain in uncertainty without reaching for premature resolution. Most systems — intellectual, organizational, computational — are designed to eliminate ambiguity as quickly as possible. But the richest insights often emerge from sustained engagement with what we don't yet understand. The pressure to resolve is the enemy of depth.

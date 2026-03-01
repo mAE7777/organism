@@ -1,0 +1,5 @@
+Companion planting exploits biochemical relationships between species. Tomatoes and basil aren't just a culinary pairing — basil repels thrips and aphids while attracting pollinators. The Three Sisters method (corn, beans, squash) creates a self-reinforcing system: corn provides structure for beans to climb, beans fix nitrogen for all three, and squash leaves shade the soil to retain moisture and suppress weeds.
+
+Soil health is a microbial economy. One teaspoon of healthy soil contains more microorganisms than people on Earth. Mycorrhizal fungi extend root networks by orders of magnitude, trading phosphorus for carbon. Tilling destroys these networks — no-till gardening preserves the underground infrastructure that took years to establish. You're not growing plants; you're cultivating the ecosystem that grows plants.
+
+Pruning is counterintuitive: removing healthy growth stimulates more vigorous production. An unpruned fruit tree puts energy into canopy expansion rather than fruit. Strategic cuts redirect resources, improve air circulation to reduce disease pressure, and ensure light penetrates to interior branches where next year's buds are forming.
