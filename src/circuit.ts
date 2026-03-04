@@ -253,7 +253,7 @@ export class Circuit {
 
     // 8. Emit signal
     const articulationPoints = findArticulationPoints(currentSnapshot);
-    const emergentPaths = discoverEmergentPaths(currentSnapshot, 0.1, 3, 5);
+    const emergentPaths = discoverEmergentPaths(currentSnapshot, 0.1, 2, 5);
     const newRearrangements = detectRearrangements(this.metadata.chainHistories);
 
     const signal = emitSignal(
@@ -465,7 +465,7 @@ export class Circuit {
     const state = this.topology.snapshot();
     const bridges = computeBridgeScores(state);
     const articulationPoints = findArticulationPoints(state);
-    const emergentPaths = discoverEmergentPaths(state, 0.1, 3, 5);
+    const emergentPaths = discoverEmergentPaths(state, 0.1, 2, 5);
     const rearrangements = detectRearrangements(this.metadata.chainHistories);
 
     const emptyPrunerResult: PrunerResult = {

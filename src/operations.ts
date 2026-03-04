@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema';
 import type { Facet, Concept, Chain, ChainStep, ComparisonResult, TopologyState, FacetPair, SignalQueryContext } from './types.js';
 import { CostTracker } from './cost.js';
+import type { IOLogger } from './io-logger.js';
 
 const HAIKU = 'claude-haiku-4-5-20251001';
 const SONNET = 'claude-sonnet-4-6';
@@ -177,10 +178,24 @@ export interface ConnectResult {
 export class Operations {
   private client: Anthropic;
   private costTracker: CostTracker;
+  private ioLogger?: IOLogger;
 
-  constructor(client: Anthropic, costTracker: CostTracker) {
+  constructor(client: Anthropic, costTracker: CostTracker, ioLogger?: IOLogger) {
     this.client = client;
     this.costTracker = costTracker;
+    this.ioLogger = ioLogger;
+  }
+
+  private logIO(operation: string, model: string, messages: Array<{ role: string; content: string }>, response: any, usage: { input_tokens: number; output_tokens: number }): void {
+    this.ioLogger?.log({
+      timestamp: Date.now(),
+      operation,
+      model,
+      messages,
+      response: JSON.stringify(response),
+      inputTokens: usage.input_tokens,
+      outputTokens: usage.output_tokens,
+    });
   }
 
   async decompose(text: string, identityContext?: string): Promise<DecomposeResult> {
@@ -190,13 +205,7 @@ export class Operations {
       ? `${identityContext}\n\nPay special attention to concepts that extend or challenge your existing connections.\n\n`
       : '';
 
-    const message = await withRetry(() => this.client.messages.parse({
-      model: HAIKU,
-      max_tokens: 2048,
-      messages: [
-        {
-          role: 'user',
-          content: `${identityPrefix}Given this text, extract 3-8 key concepts. For each concept, identify 5-10 distinct facets.
+    const userContent = `${identityPrefix}Given this text, extract 3-8 key concepts. For each concept, identify 5-10 distinct facets.
 
 Each facet has:
 - domain: one of "physical", "abstract", "social", "temporal", "process", "structural", "emotional"
@@ -204,9 +213,12 @@ Each facet has:
 - salience: how prominent this facet is in the given context (0.0-1.0)
 
 Text:
-${text}`,
-        },
-      ],
+${text}`;
+
+    const message = await withRetry(() => this.client.messages.parse({
+      model: HAIKU,
+      max_tokens: 2048,
+      messages: [{ role: 'user', content: userContent }],
       output_config: {
         format: jsonSchemaOutputFormat(DecomposeSchema),
       },
@@ -218,6 +230,7 @@ ${text}`,
       message.usage.input_tokens,
       message.usage.output_tokens
     );
+    this.logIO('decompose', HAIKU, [{ role: 'user', content: userContent }], message.content, message.usage);
 
     return message.parsed_output as DecomposeResult;
   }
@@ -241,13 +254,7 @@ ${text}`,
       topologyContext.currentIdentity ? `Identity: ${topologyContext.currentIdentity}` : '',
     ].filter(Boolean).join('\n');
 
-    const thinkMessage = await withRetry(() => this.client.messages.create({
-      model: SONNET,
-      max_tokens: 1024,
-      messages: [
-        {
-          role: 'user',
-          content: `You are analyzing a text that will be integrated into a knowledge topology. Think freely about what's genuinely new, what challenges existing connections, what deepens understanding, and what questions arise.
+    const thinkContent = `You are analyzing a text that will be integrated into a knowledge topology. Think freely about what's genuinely new, what challenges existing connections, what deepens understanding, and what questions arise.
 
 ${contextLines ? `Topology context:\n${contextLines}\n\n` : ''}Text to analyze:
 ${text}
@@ -256,9 +263,12 @@ Think in 200-400 words. Focus on:
 - What's genuinely new here vs what's familiar?
 - What challenges or contradicts existing connections?
 - What deepens or extends current understanding?
-- What questions does this raise that the topology can't yet answer?`,
-        },
-      ],
+- What questions does this raise that the topology can't yet answer?`;
+
+    const thinkMessage = await withRetry(() => this.client.messages.create({
+      model: SONNET,
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: thinkContent }],
     }));
 
     const thinkText = thinkMessage.content.find((b) => b.type === 'text')?.text ?? '';
@@ -268,15 +278,10 @@ Think in 200-400 words. Focus on:
       thinkMessage.usage.input_tokens,
       thinkMessage.usage.output_tokens,
     );
+    this.logIO('decompose-think', SONNET, [{ role: 'user', content: thinkContent }], thinkMessage.content, thinkMessage.usage);
 
     // Phase B: Haiku structured extraction
-    const extractMessage = await withRetry(() => this.client.messages.parse({
-      model: HAIKU,
-      max_tokens: 4096,
-      messages: [
-        {
-          role: 'user',
-          content: `Based on this analysis, extract structured concepts with domain-qualified facets.
+    const extractContent = `Based on this analysis, extract structured concepts with domain-qualified facets.
 
 Analysis:
 ${thinkText}
@@ -292,9 +297,12 @@ Each facet has:
 - novelty: true if this facet represents something new not captured by existing topology bridges
 - tension: if this facet contradicts or challenges an existing connection, describe the tension (null otherwise)
 
-Also extract 0-5 questions this text raises that the topology might not yet be able to answer.`,
-        },
-      ],
+Also extract 0-5 questions this text raises that the topology might not yet be able to answer.`;
+
+    const extractMessage = await withRetry(() => this.client.messages.parse({
+      model: HAIKU,
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: extractContent }],
       output_config: {
         format: jsonSchemaOutputFormat(CrystallizationSchema),
       },
@@ -306,6 +314,7 @@ Also extract 0-5 questions this text raises that the topology might not yet be a
       extractMessage.usage.input_tokens,
       extractMessage.usage.output_tokens,
     );
+    this.logIO('decompose-extract', HAIKU, [{ role: 'user', content: extractContent }], extractMessage.content, extractMessage.usage);
 
     const parsed = extractMessage.parsed_output as CrystallizationResult;
     return {
@@ -334,13 +343,7 @@ Also extract 0-5 questions this text raises that the topology might not yet be a
       )
       .join('\n');
 
-    const message = await withRetry(() => this.client.messages.parse({
-      model: SONNET,
-      max_tokens: 4096,
-      messages: [
-        {
-          role: 'user',
-          content: `For each pair of facets below, trace an association chain from A to B through intermediate concepts.
+    const connectContent = `For each pair of facets below, trace an association chain from A to B through intermediate concepts.
 
 Each step: one concept's facet connects to another concept's facet through genuine association.
 The chain must feel NATURAL — forced connections are worse than no connection.
@@ -352,9 +355,12 @@ ${topologyContext || 'Empty — first input.'}
 Pairs:
 ${pairsText}
 
-For each pair, return whether a connection exists, the chain of steps, a confidence score (0.0-1.0), and which domains were crossed.`,
-        },
-      ],
+For each pair, return whether a connection exists, the chain of steps, a confidence score (0.0-1.0), and which domains were crossed.`;
+
+    const message = await withRetry(() => this.client.messages.parse({
+      model: SONNET,
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: connectContent }],
       output_config: {
         format: jsonSchemaOutputFormat(ConnectSchema),
       },
@@ -366,6 +372,7 @@ For each pair, return whether a connection exists, the chain of steps, a confide
       message.usage.input_tokens,
       message.usage.output_tokens
     );
+    this.logIO('connect', SONNET, [{ role: 'user', content: connectContent }], message.content, message.usage);
 
     const parsed = message.parsed_output as {
       results: Array<{
@@ -413,13 +420,7 @@ For each pair, return whether a connection exists, the chain of steps, a confide
     const formatChains = (cs: typeof newChains) =>
       cs.map((c) => `  ${c.fromConcept} → ${c.toConcept} (depth ${c.depth}, weight ${c.weight.toFixed(2)})`).join('\n');
 
-    const message = await withRetry(() => this.client.messages.parse({
-      model: SONNET,
-      max_tokens: 4096,
-      messages: [
-        {
-          role: 'user',
-          content: `Analyze topology changes from run ${previous.runCount} to ${current.runCount}.
+    const compareContent = `Analyze topology changes from run ${previous.runCount} to ${current.runCount}.
 
 Summary: ${previous.concepts.length}→${current.concepts.length} concepts, ${previous.chains.length}→${current.chains.length} chains
 
@@ -440,9 +441,12 @@ What changed? Focus on:
 - What new connections appeared and why they matter
 - What connections disappeared and whether that loss is significant
 - Which cross-input chains are most surprising or valuable
-- What does this change REVEAL — not just what's different, but what the difference means`,
-        },
-      ],
+- What does this change REVEAL — not just what's different, but what the difference means`;
+
+    const message = await withRetry(() => this.client.messages.parse({
+      model: SONNET,
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: compareContent }],
       output_config: {
         format: jsonSchemaOutputFormat(CompareSchema),
       },
@@ -454,6 +458,7 @@ What changed? Focus on:
       message.usage.input_tokens,
       message.usage.output_tokens
     );
+    this.logIO('compare', SONNET, [{ role: 'user', content: compareContent }], message.content, message.usage);
 
     return message.parsed_output as ComparisonResult;
   }
@@ -471,22 +476,19 @@ What changed? Focus on:
       return `Concepts (${s.concepts.length}):\n${concepts}\n\nChains (${s.chains.length}):\n${chains}`;
     };
 
-    const message = await withRetry(() => this.client.messages.create({
-      model: SONNET,
-      max_tokens: 2048,
-      messages: [
-        {
-          role: 'user',
-          content: `You have access to a knowledge topology — a network of concepts connected through facet-based association chains. Use this topology to answer the question, paying special attention to cross-domain connections and chains that link concepts from different source inputs.
+    const queryContent = `You have access to a knowledge topology — a network of concepts connected through facet-based association chains. Use this topology to answer the question, paying special attention to cross-domain connections and chains that link concepts from different source inputs.
 
 Topology:
 ${formatState(topology)}
 
 Question: ${question}
 
-Answer based on what the topology reveals. Highlight any non-obvious cross-domain connections.`,
-        },
-      ],
+Answer based on what the topology reveals. Highlight any non-obvious cross-domain connections.`;
+
+    const message = await withRetry(() => this.client.messages.create({
+      model: SONNET,
+      max_tokens: 2048,
+      messages: [{ role: 'user', content: queryContent }],
     }));
 
     const textBlock = message.content.find((b) => b.type === 'text');
@@ -496,6 +498,7 @@ Answer based on what the topology reveals. Highlight any non-obvious cross-domai
       message.usage.input_tokens,
       message.usage.output_tokens
     );
+    this.logIO('query-topology', SONNET, [{ role: 'user', content: queryContent }], message.content, message.usage);
 
     return textBlock?.text ?? '';
   }
@@ -542,30 +545,28 @@ Answer with a single coherent insight, not a list. Explain WHY the structural co
     }));
 
     const textBlock = message.content.find(b => b.type === 'text');
-    this.costTracker.record('query-topology', SONNET,
+    this.costTracker.record('query-signal', SONNET,
       message.usage.input_tokens, message.usage.output_tokens);
+    this.logIO('query-signal', SONNET, [{ role: 'user', content: prompt }], message.content, message.usage);
     return textBlock?.text ?? '';
   }
 
   async queryWithFlatMemory(question: string, memory: string): Promise<string> {
     this.costTracker.checkBudget();
 
-    const message = await withRetry(() => this.client.messages.create({
-      model: SONNET,
-      max_tokens: 2048,
-      messages: [
-        {
-          role: 'user',
-          content: `You have access to a collection of summarized knowledge from various inputs. Use this knowledge to answer the question.
+    const flatContent = `You have access to a collection of summarized knowledge from various inputs. Use this knowledge to answer the question.
 
 Knowledge:
 ${memory}
 
 Question: ${question}
 
-Answer based on what the knowledge reveals. Highlight any non-obvious cross-domain connections.`,
-        },
-      ],
+Answer based on what the knowledge reveals. Highlight any non-obvious cross-domain connections.`;
+
+    const message = await withRetry(() => this.client.messages.create({
+      model: SONNET,
+      max_tokens: 2048,
+      messages: [{ role: 'user', content: flatContent }],
     }));
 
     const textBlock = message.content.find((b) => b.type === 'text');
@@ -575,6 +576,7 @@ Answer based on what the knowledge reveals. Highlight any non-obvious cross-doma
       message.usage.input_tokens,
       message.usage.output_tokens
     );
+    this.logIO('query-baseline', SONNET, [{ role: 'user', content: flatContent }], message.content, message.usage);
 
     return textBlock?.text ?? '';
   }
@@ -582,20 +584,17 @@ Answer based on what the knowledge reveals. Highlight any non-obvious cross-doma
   async summarizeForBaseline(text: string, runNumber: number): Promise<string> {
     this.costTracker.checkBudget();
 
-    const message = await withRetry(() => this.client.messages.create({
-      model: SONNET,
-      max_tokens: 1024,
-      messages: [
-        {
-          role: 'user',
-          content: `Summarize the key concepts, relationships, and insights from this text. Be thorough — capture all important ideas and how they relate to each other.
+    const summarizeContent = `Summarize the key concepts, relationships, and insights from this text. Be thorough — capture all important ideas and how they relate to each other.
 
 Input #${runNumber}:
 ${text}
 
-Provide a detailed summary that preserves the key concepts and their relationships.`,
-        },
-      ],
+Provide a detailed summary that preserves the key concepts and their relationships.`;
+
+    const message = await withRetry(() => this.client.messages.create({
+      model: SONNET,
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: summarizeContent }],
     }));
 
     const textBlock = message.content.find((b) => b.type === 'text');
@@ -605,6 +604,7 @@ Provide a detailed summary that preserves the key concepts and their relationshi
       message.usage.input_tokens,
       message.usage.output_tokens
     );
+    this.logIO('baseline-summarize', SONNET, [{ role: 'user', content: summarizeContent }], message.content, message.usage);
 
     return textBlock?.text ?? '';
   }

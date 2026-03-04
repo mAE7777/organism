@@ -118,7 +118,7 @@ export function computeBridgeScores(topology: TopologyState): BridgeConcept[] {
 
     // Age-based maturity discount: new concepts start at 30% score, reaching 100% after 5 runs
     const conceptAge = Math.max(0, topology.runCount - concept.sourceInput);
-    const maturityFactor = Math.min(1.0, conceptAge / 5);
+    const maturityFactor = Math.min(1.0, conceptAge / 3);
     const bridgeScore = sourceInputs.size * domains.size * avgWeight * (0.3 + 0.7 * maturityFactor);
 
     results.push({

@@ -3,16 +3,19 @@ import type { IdentitySnapshot, BridgeConcept, TopologyState } from './types.js'
 import type { RearrangementEvent } from './analysis.js';
 import { CostTracker } from './cost.js';
 import { withRetry } from './operations.js';
+import type { IOLogger } from './io-logger.js';
 
 const HAIKU = 'claude-haiku-4-5-20251001';
 
 export class IdentityEngine {
   private client: Anthropic;
   private costTracker: CostTracker;
+  private ioLogger?: IOLogger;
 
-  constructor(client: Anthropic, costTracker: CostTracker) {
+  constructor(client: Anthropic, costTracker: CostTracker, ioLogger?: IOLogger) {
     this.client = client;
     this.costTracker = costTracker;
+    this.ioLogger = ioLogger;
   }
 
   async generateSnapshot(
@@ -76,6 +79,15 @@ Write a one-paragraph description (3-5 sentences) of what this topology currentl
       message.usage.input_tokens,
       message.usage.output_tokens,
     );
+    this.ioLogger?.log({
+      timestamp: Date.now(),
+      operation: 'identity',
+      model: HAIKU,
+      messages: [{ role: 'user', content: prompt }],
+      response: JSON.stringify(message.content),
+      inputTokens: message.usage.input_tokens,
+      outputTokens: message.usage.output_tokens,
+    });
 
     return {
       run,

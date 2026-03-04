@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync, unlinkSync } from 'fs';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import Anthropic from '@anthropic-ai/sdk';
 import { TopologyStore } from './topology.js';
 import { MetadataStore } from './metadata.js';
@@ -14,6 +14,7 @@ import { computeBridgeScores, detectRearrangements } from './analysis.js';
 import { EmbeddingResonance } from './resonance.js';
 import { TestRunner } from './test-runner.js';
 import { topologyHealthCheck } from './graph-metrics.js';
+import { IOLogger } from './io-logger.js';
 
 const L2_QUERIES = [
   'What connects security to cooking?',
@@ -253,10 +254,11 @@ export class L2Runner {
 
     const client = new Anthropic();
     const costTracker = new CostTracker(resultsDir);
-    const ops = new Operations(client, costTracker);
+    const ioLogger = new IOLogger(resultsDir);
+    const ops = new Operations(client, costTracker, ioLogger);
     const topology = new TopologyStore(topoDir);
     const metadata = new MetadataStore(metaDir);
-    const identity = new IdentityEngine(client, costTracker);
+    const identity = new IdentityEngine(client, costTracker, ioLogger);
     const circuit = new Circuit(topology, ops, traceDir, metadata, identity);
 
     const baseline: Baseline | EnrichedBaseline = options.enrichedBaseline
@@ -328,10 +330,11 @@ export class L2Runner {
 
     const client = new Anthropic();
     const costTracker = new CostTracker(resultsDir);
-    const ops = new Operations(client, costTracker);
+    const ioLogger = new IOLogger(resultsDir);
+    const ops = new Operations(client, costTracker, ioLogger);
     const topology = new TopologyStore(topoDir);
     const metadata = new MetadataStore(metaDir);
-    const identity = new IdentityEngine(client, costTracker);
+    const identity = new IdentityEngine(client, costTracker, ioLogger);
     const circuit = new Circuit(topology, ops, join(resultsDir, 'traces'), metadata, identity);
 
     const baseline: Baseline | EnrichedBaseline = options.enrichedBaseline
@@ -625,6 +628,7 @@ export class L2Runner {
 interface L3Options {
   resume?: boolean;
   dataDir?: string;
+  inputDir?: string;
 }
 
 export class L3Runner {
@@ -644,10 +648,11 @@ export class L3Runner {
 
     const client = new Anthropic();
     const costTracker = new CostTracker(resultsDir, 20.0);
-    const ops = new Operations(client, costTracker);
+    const ioLogger = new IOLogger(resultsDir);
+    const ops = new Operations(client, costTracker, ioLogger);
     const topology = new TopologyStore(topoDir);
     const metadata = new MetadataStore(topoDir);
-    const identity = new IdentityEngine(client, costTracker);
+    const identity = new IdentityEngine(client, costTracker, ioLogger);
     const resonance = new EmbeddingResonance();
 
     console.log('Initializing embedding model...');
@@ -656,7 +661,7 @@ export class L3Runner {
     const circuit = new Circuit(topology, ops, traceDir, metadata, identity, resonance);
     const testRunner = new TestRunner(topology, metadata, ops, client, costTracker, topoDir);
 
-    const inputs = this.loadInputs();
+    const inputs = this.loadInputs(options.inputDir);
     const startFrom = options.resume ? circuit.getLastCompletedRun() + 1 : 1;
 
     if (!options.resume) {
@@ -843,10 +848,11 @@ export class L3Runner {
 
     const client = new Anthropic();
     const costTracker = new CostTracker(resultsDir, 25.0);
-    const ops = new Operations(client, costTracker);
+    const ioLogger = new IOLogger(resultsDir);
+    const ops = new Operations(client, costTracker, ioLogger);
     const topology = new TopologyStore(topoDir);
     const metadata = new MetadataStore(topoDir);
-    const identity = new IdentityEngine(client, costTracker);
+    const identity = new IdentityEngine(client, costTracker, ioLogger);
     const resonance = new EmbeddingResonance();
 
     console.log('Initializing embedding model...');
@@ -902,10 +908,11 @@ export class L3Runner {
 
     const client = new Anthropic();
     const costTracker = new CostTracker(resultsDir, 10.0);
-    const ops = new Operations(client, costTracker);
+    const ioLogger = new IOLogger(resultsDir);
+    const ops = new Operations(client, costTracker, ioLogger);
     const topology = new TopologyStore(topoDir);
     const metadata = new MetadataStore(topoDir);
-    const identity = new IdentityEngine(client, costTracker);
+    const identity = new IdentityEngine(client, costTracker, ioLogger);
     const resonance = new EmbeddingResonance();
 
     console.log('Initializing embedding model...');
@@ -991,8 +998,8 @@ export class L3Runner {
     console.log(`Cost: $${costTracker.totalCost.toFixed(4)}`);
   }
 
-  private loadInputs(): Array<{ name: string; content: string }> {
-    const inputDir = join(this.rootDir, 'inputs');
+  private loadInputs(customDir?: string): Array<{ name: string; content: string }> {
+    const inputDir = customDir ? resolve(customDir) : join(this.rootDir, 'inputs');
     const files = readdirSync(inputDir)
       .filter((f) => f.endsWith('.md'))
       .sort();

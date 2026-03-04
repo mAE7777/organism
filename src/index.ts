@@ -1,6 +1,7 @@
 import { resolve } from 'path';
 import { Runner, L2Runner, L3Runner } from './runner.js';
 import { runBoundaryTest, runPathDependenceTest } from './diagnostic-tests.js';
+import { generateInventory, generateReport } from './inventory.js';
 
 const ROOT_DIR = resolve(import.meta.dirname, '..');
 
@@ -96,6 +97,7 @@ async function main() {
       await l3.runL3({
         resume: args.includes('--resume'),
         dataDir: getArgValue(args, '--data-dir'),
+        inputDir: getArgValue(args, '--input-dir'),
       });
       break;
     }
@@ -131,6 +133,16 @@ async function main() {
       break;
     }
 
+    // === Stability test ===
+    case 'run-stability-test': {
+      const { runStabilityTest } = await import('./stability-test.js');
+      await runStabilityTest({
+        runsPerInput: parseInt(getArgValue(args, '--runs') ?? '3', 10),
+        includePersonal: !args.includes('--no-personal'),
+      });
+      break;
+    }
+
     // === Diagnostic tests ===
     case 'run-diagnostic-boundary': {
       await runBoundaryTest();
@@ -139,6 +151,17 @@ async function main() {
 
     case 'run-diagnostic-path': {
       await runPathDependenceTest();
+      break;
+    }
+
+    // === Inventory & Report ===
+    case 'run-inventory': {
+      generateInventory();
+      break;
+    }
+
+    case 'run-report': {
+      generateReport();
       break;
     }
 
@@ -166,6 +189,7 @@ async function main() {
   npx tsx src/index.ts run-l3                       # full 50-input Level 3 run
   npx tsx src/index.ts run-l3 --resume              # resume from last completed input
   npx tsx src/index.ts run-l3 --data-dir <dir>      # use custom data directory
+  npx tsx src/index.ts run-l3 --input-dir <dir>     # use custom input directory
   npx tsx src/index.ts run-l3-evaluate              # run automated test suite (A-K)
   npx tsx src/index.ts run-l3-report                # generate final report
   npx tsx src/index.ts run-l3-drift-test            # info about drift tests
@@ -173,9 +197,18 @@ async function main() {
   npx tsx src/index.ts run-l3-scale-test            # alias for run-l3-scale
   npx tsx src/index.ts run-l3-fair-judge            # run redesigned fair Judge (Test J)
 
+  # Stability test
+  npx tsx src/index.ts run-stability-test              # decomposition stability (7 inputs x 3 runs, ~$0.50)
+  npx tsx src/index.ts run-stability-test --runs 5     # 7 inputs x 5 runs (~$0.80)
+  npx tsx src/index.ts run-stability-test --no-personal # 5 standard inputs only
+
   # Diagnostic tests
   npx tsx src/index.ts run-diagnostic-boundary      # capability boundary test (~$0.35)
   npx tsx src/index.ts run-diagnostic-path          # semantic path-dependence test (~$0.05)
+
+  # Inventory & Report
+  npx tsx src/index.ts run-inventory               # full categorized inventory
+  npx tsx src/index.ts run-report                  # curated product report
 
   # Investigation scripts
   npx tsx src/order-test.ts                         # 10-input order sensitivity test
