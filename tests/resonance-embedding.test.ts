@@ -74,11 +74,9 @@ describe.skipIf(process.env.SKIP_EMBEDDING_TESTS !== undefined)('EmbeddingResona
     const sameResult = await resonance.computeResonance(sameDomainA, sameDomainB);
     const crossResult = await resonance.computeResonance(crossDomainA, crossDomainB);
 
-    // Both return {cosine, score}. Cosine should be similar, score differs by domain penalty.
-    // Same domain has 0.5 penalty, cross domain has 1.0
+    // Both return {cosine, score}. Score differs by domain penalty (same=0.5, cross=1.0).
+    // Note: cosines also differ because computeResonance prepends domain to attribute text.
     expect(crossResult.score).toBeGreaterThan(sameResult.score);
-    // Cosine should be roughly the same since text is identical
-    expect(sameResult.cosine).toBeCloseTo(crossResult.cosine, 1);
   }, 60000);
 
   it('findResonantPairs returns sorted by score', async () => {
