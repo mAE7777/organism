@@ -58,7 +58,7 @@ export class EnrichedBaseline {
     const existing = existsSync(this.memoryPath) ? readFileSync(this.memoryPath, 'utf-8') : '# Knowledge Base\n';
     writeFileSync(this.memoryPath, existing + header + summary);
 
-    // Pass 2: Cross-reference — find connections between new input and all previous
+    // Pass 2: Cross-reference to find connections between new input and all previous
     const allMemory = readFileSync(this.memoryPath, 'utf-8');
     const crossRef = await this.ops.queryWithFlatMemory(
       `What connections, patterns, or tensions exist between this new input and everything previously recorded? Be specific about which inputs connect and why.\n\nNew input (#${runNumber}):\n${summary}`,

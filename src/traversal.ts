@@ -50,7 +50,7 @@ export function findPaths(
   if (fromL === toL) return [];
   if (!adj.has(fromL) || !adj.has(toL)) return [];
 
-  // DFS with depth limit — memory-efficient (no queue)
+  // DFS with depth limit: memory-efficient (no queue)
   const path: string[] = [fromL];
   const chainIds: string[] = [];
   const visited = new Set<string>([fromL]);

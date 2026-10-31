@@ -37,7 +37,7 @@ describe('EmbeddingResonance.cosineSimilarity (static, no model)', () => {
   });
 });
 
-// Full embedding tests require model download — mark as integration tests
+// Full embedding tests download a model. Set SKIP_EMBEDDING_TESTS to skip them
 describe.skipIf(process.env.SKIP_EMBEDDING_TESTS !== undefined)('EmbeddingResonance (with model)', () => {
   let resonance: EmbeddingResonance;
 

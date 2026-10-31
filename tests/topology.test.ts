@@ -69,7 +69,7 @@ describe('TopologyStore', () => {
       expect(store.chains).toHaveLength(1);
     });
 
-    it('deduplicates by endpoints — keeps higher confidence', () => {
+    it('deduplicates by endpoints, keeping the higher confidence', () => {
       store.addChain(makeChain('a', 'b', { confidence: 0.6 }));
       store.addChain(makeChain('a', 'b', { confidence: 0.9 }));
       expect(store.chains).toHaveLength(1);

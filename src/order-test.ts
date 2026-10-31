@@ -123,7 +123,7 @@ async function main() {
     const origBridges = computeBridgeScores({
       ...origState,
       // We have the full topology, but bridges depend on all concepts/chains
-      // Just compute from current state — this gives bridges at run 50 not run N
+      // Compute from current state. This gives bridges at run 50, not run N
       // For a proper comparison, we'd need snapshots at each run
     });
     originalBridgeNames = origBridges.slice(0, 10).map(b => {
@@ -140,15 +140,14 @@ async function main() {
   console.log(`Jaccard overlap: ${(overlap * 100).toFixed(1)}%`);
   console.log(`\nDecision:`);
   if (originalBridgeNames.length === 0) {
-    console.log(`  Cannot compare — original trace at run ${count} not found.`);
+    console.log(`  Cannot compare: original trace at run ${count} not found.`);
     console.log(`  Compare manually with full 50-run topology.`);
   } else if (overlap > 0.7) {
-    console.log(`  CONVERGENCE — bridges overlap > 70%. Order doesn't matter much.`);
+    console.log(`  CONVERGENCE: bridges overlap > 70%. Order doesn't matter much.`);
   } else if (overlap < 0.5) {
-    console.log(`  PATH-DEPENDENT — bridges overlap < 50%. Order significantly affects results.`);
-    console.log(`  Consider Phase 2b structural fix.`);
+    console.log(`  PATH-DEPENDENT: bridges overlap < 50%. Order significantly affects results.`);
   } else {
-    console.log(`  INCONCLUSIVE — overlap ${(overlap * 100).toFixed(1)}% is between 50-70%.`);
+    console.log(`  INCONCLUSIVE: overlap ${(overlap * 100).toFixed(1)}% is between 50-70%.`);
     console.log(`  Consider running full 50-input test for clearer signal.`);
   }
 

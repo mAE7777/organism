@@ -303,7 +303,7 @@ ${concatenated}`;
         client,
         costTracker,
       );
-      console.log(`    Judge: ${entry.judge.score}/5 — ${entry.judge.explanation}`);
+      console.log(`    Judge: ${entry.judge.score}/5. ${entry.judge.explanation}`);
     }
 
     judgedMatches.push(entry);
@@ -359,7 +359,7 @@ ${concatenated}`;
   if (topUniqueCount >= 5) {
     console.log('  → Topology genuinely discovers patterns Claude cannot see natively');
   } else if (topUniqueCount >= 2) {
-    console.log('  → Mixed — topology adds some value, partially redundant');
+    console.log('  → Mixed: topology adds some value, partially redundant');
   } else {
     console.log('  → Topology is largely redundant with full-context Claude');
   }
@@ -520,7 +520,7 @@ async function runPathDependenceTest() {
         client,
         costTracker,
       );
-      console.log(`    Judge: ${entry.judge.score}/5 — ${entry.judge.explanation}`);
+      console.log(`    Judge: ${entry.judge.score}/5. ${entry.judge.explanation}`);
     }
 
     judgedMatches.push(entry);

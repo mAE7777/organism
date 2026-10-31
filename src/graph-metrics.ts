@@ -328,7 +328,7 @@ export function topologyHealthCheck(
 
   // Warnings
   const warnings: string[] = [];
-  if (hgi > 0.7) warnings.push(`High hub gravity (Gini=${hgi.toFixed(3)}) — star graph risk`);
+  if (hgi > 0.7) warnings.push(`High hub gravity (Gini=${hgi.toFixed(3)}): star graph risk`);
   if (staleRegions.length > 0) warnings.push(`${staleRegions.length} stale region(s) with avg weight < 0.5`);
   if (orphanCount > topology.concepts.length * 0.3) warnings.push(`${orphanCount} orphan concepts (>${Math.round(topology.concepts.length * 0.3)} threshold)`);
   if (bridgeStability.lostBridges.length >= 3) warnings.push(`${bridgeStability.lostBridges.length} top bridges lost since last check`);

@@ -1,7 +1,7 @@
 # Level 2: Proving the Topology Brain
 
 **Date:** 2026-02-25
-**Context:** MVO proved the plumbing works. 0 of 14 claims validated. This design targets the claims that would actually prove the topology is worth building — not trivial formatting wins, but genuine evidence of structural superiority.
+**Context:** MVO proved the plumbing works. 0 of 14 claims validated. This design targets the claims that would actually prove the topology is worth building: not trivial formatting wins, but genuine evidence of structural superiority.
 
 ---
 
@@ -11,13 +11,13 @@ Of the 14 claims, most are features (phase transitions, active inference, antago
 
 | Priority | Claim | Why it matters |
 |----------|-------|---------------|
-| **P0** | #2 — Emergence from trace density | THE central thesis. If connections never emerge that weren't explicitly planted, the topology is just expensive prompt engineering. Everything else is irrelevant without this. |
-| **P0** | #8 — Autopoietic loop changes behavior | If the system doesn't become different because of its history, it's a stateless pipeline with a cache. The loop is what distinguishes an organism from a tool. |
-| **P1** | #11 — Learning = rearrangement, not accumulation | If the topology only grows and never reorganizes, it's a database. The philosophical claim (evolution is transformation, not accumulation) lives or dies here. |
-| **P1** | #6 — Decay creates value (not just reduces noise) | Does selective forgetting improve answer quality? Not "does the math work" (MVO proved that) but "does pruning old chains produce better reasoning than keeping everything?" |
-| **P1** | #10 — Structured forgetting improves performance | Related to #6 but broader: does the system get SIMPLER and BETTER over time, not just bigger? The AoT prediction. |
-| **P2** | #1 — Decomposed > monolithic (fair comparison) | Important but the hardest to test fairly. Only worth testing after P0 claims are validated. |
-| **P2** | #7 — Compare reveals non-obvious shifts | Only becomes meaningful after 50+ runs when the topology has had time to reorganize. Derivative of #11. |
+| **P0** | #2: Emergence from trace density | THE central thesis. If connections never emerge that weren't explicitly planted, the topology is just expensive prompt engineering. Everything else is irrelevant without this. |
+| **P0** | #8: Autopoietic loop changes behavior | If the system doesn't become different because of its history, it's a stateless pipeline with a cache. The loop is what distinguishes an organism from a tool. |
+| **P1** | #11: Learning = rearrangement, not accumulation | If the topology only grows and never reorganizes, it's a database. The philosophical claim (evolution is transformation, not accumulation) lives or dies here. |
+| **P1** | #6: Decay creates value (not just reduces noise) | Does selective forgetting improve answer quality? Not "does the math work" (MVO proved that) but "does pruning old chains produce better reasoning than keeping everything?" |
+| **P1** | #10: Structured forgetting improves performance | Related to #6 but broader: does the system get SIMPLER and BETTER over time, not just bigger? The AoT prediction. |
+| **P2** | #1: Decomposed > monolithic (fair comparison) | Important but the hardest to test fairly. Only worth testing after P0 claims are validated. |
+| **P2** | #7: Compare reveals non-obvious shifts | Only becomes meaningful after 50+ runs when the topology has had time to reorganize. Derivative of #11. |
 
 Claims #3, #4, #5, #9, #12, #13, #14 are either derivative of the above, or are Level 3+ features not worth building until the foundation is proven.
 
@@ -25,9 +25,9 @@ Claims #3, #4, #5, #9, #12, #13, #14 are either derivative of the above, or are 
 
 ## The Core Problem to Solve
 
-The MVO's fatal flaw: **every connection in the topology was explicitly solicited by an LLM call.** There's no emergence because there's no mechanism for emergence. Asking Sonnet "connect A to B" and storing the result is not stigmergy — it's outsourced pattern matching.
+The MVO's fatal flaw: **every connection in the topology was explicitly solicited by an LLM call.** There's no emergence because there's no mechanism for emergence. Asking Sonnet "connect A to B" and storing the result is not stigmergy. It's outsourced pattern matching.
 
-Real emergence requires: **the system must discover connections that no single LLM call was asked to find.** These connections must arise from the STRUCTURE of the topology — from the fact that chain X→Y and chain Y→Z exist, making X→Z traversable even though nobody asked for it.
+Real emergence requires: **the system must discover connections that no single LLM call was asked to find.** These connections must arise from the STRUCTURE of the topology, from the fact that chain X→Y and chain Y→Z exist, making X→Z traversable even though nobody asked for it.
 
 This is the key architectural shift for Level 2.
 
@@ -76,7 +76,7 @@ resonance(facetA, facetB) =
   domainMatch(A, B) × attributeSimilarity(A, B) × salience(A) × salience(B)
 ```
 
-Resonance above a threshold (0.5) creates a LATENT connection — recorded in the topology as a potential chain with confidence = resonance score, but NOT LLM-validated. These latent connections are cheap (no API call) and may or may not be meaningful.
+Resonance above a threshold (0.5) creates a LATENT connection, recorded in the topology as a potential chain with confidence = resonance score, but NOT LLM-validated. These latent connections are cheap (no API call) and may or may not be meaningful.
 
 Over time, if multiple independent facet pairs between two concepts all show high resonance, the aggregate evidence becomes strong even without LLM validation. This is compounding (#5) happening mechanically.
 
@@ -84,7 +84,7 @@ The LLM is only called to validate latent connections when they're actually need
 
 **Mechanism 3: Bridge concept detection (topology analysis, no LLM)**
 
-Code identifies concepts that appear in many chains as intermediaries — bridge concepts. These are analogous to keystone species in ecology. They're identified purely from graph structure:
+Code identifies concepts that appear in many chains as intermediaries: bridge concepts. These are analogous to keystone species in ecology. They're identified purely from graph structure:
 
 ```typescript
 bridgeScore(concept) =
@@ -93,7 +93,7 @@ bridgeScore(concept) =
   avgWeight(chainsThrough(concept))
 ```
 
-Bridge concepts that connect many different source inputs across many domains are structurally important. When a bridge concept's score crosses a threshold, the system flags it as a discovered structural pattern — something the topology revealed that no individual LLM call was designed to find.
+Bridge concepts that connect many different source inputs across many domains are structurally important. When a bridge concept's score crosses a threshold, the system flags it as a discovered structural pattern: something the topology revealed that no individual LLM call was designed to find.
 
 ### The Identity Loop (Claim #8)
 
@@ -105,8 +105,8 @@ After each input cycle:
    - Domain drift (which domains are becoming more/less connected)
    - Rearrangement events (same endpoints, different intermediate path)
    - Decay victims (what was forgotten and what survived)
-3. Update `identity.md` — a one-paragraph self-description of the topology's current state, what it emphasizes, what it's losing, how its connection patterns are shifting
-4. Feed identity.md into subsequent decompose prompts: "Given your current understanding (identity), decompose this input — pay special attention to concepts that extend or challenge your existing connections"
+3. Update `identity.md`, a one-paragraph self-description of the topology's current state, what it emphasizes, what it's losing, how its connection patterns are shifting
+4. Feed identity.md into subsequent decompose prompts: "Given your current understanding (identity), decompose this input. Pay special attention to concepts that extend or challenge your existing connections"
 
 The test: **does decompose produce different facets when identity is included vs when it isn't?** Run the same input through decompose with and without identity context. If the outputs diverge meaningfully after 20+ cycles, the loop is producing behavioral change. If they're identical, the loop is inert.
 
@@ -153,36 +153,36 @@ When a chain between the same two concepts is regenerated using different interm
 - Does path change correlate with new inputs that introduce alternative intermediaries?
 - Is there a pattern: paths get shorter (simplification) or shift domains (reframing)?
 
-This directly tests "learning = rearrangement." If paths between the same concepts are stable (same intermediaries every time), the topology isn't reorganizing — it's static. If paths shift, something resembling learning is happening.
+This directly tests "learning = rearrangement." If paths between the same concepts are stable (same intermediaries every time), the topology isn't reorganizing. It's static. If paths shift, something resembling learning is happening.
 
 ---
 
 ## Test Protocol
 
-### Phase A: Build traversal engine + identity loop (the code)
+### Step A: Build traversal engine + identity loop (the code)
 
 Build on the existing MVO codebase:
 
-1. **Transitive path discovery** — graph traversal in topology.ts, no LLM needed
-2. **Facet resonance scoring** — code-only connection scoring in topology.ts
-3. **Bridge concept detection** — graph analysis in topology.ts
-4. **Identity loop** — identity.md generation and injection into decompose prompt
-5. **Chain history tracking** — record path versions for rearrangement detection
-6. **Aggressive decay** — faster schedule, stronger re-traversal
-7. **Modified query engine** — use graph traversal (transitive paths) for query context instead of dumping the entire topology as text
+1. **Transitive path discovery**: graph traversal in topology.ts, no LLM needed
+2. **Facet resonance scoring**: code-only connection scoring in topology.ts
+3. **Bridge concept detection**: graph analysis in topology.ts
+4. **Identity loop**: identity.md generation and injection into decompose prompt
+5. **Chain history tracking**: record path versions for rearrangement detection
+6. **Aggressive decay**: faster schedule, stronger re-traversal
+7. **Modified query engine**: use graph traversal (transitive paths) for query context instead of dumping the entire topology as text
 
-### Phase B: 50-input long run (the test)
+### Step B: 50-input long run (the test)
 
 **Inputs:** 50 diverse-domain texts. First 10 are the existing MVO inputs. Next 40 introduce new domains AND revisit themes from earlier inputs (critical for testing rearrangement and compounding).
 
 Input structure:
 - Inputs 1-10: Same as MVO (security, cooking, investing, ecology, teaching, architecture, music, medicine, game design, philosophy)
 - Inputs 11-20: Adjacent domains that should create new bridges (military strategy, parenting, software architecture, gardening, jazz pedagogy, bridge engineering, chemistry, epidemiology, sports coaching, linguistics)
-- Inputs 21-30: Explicitly revisit earlier themes from new angles (food safety regulations, investment portfolio rebalancing, forest fire recovery, online education platforms, acoustic architecture, medical AI, competitive gaming meta, philosophy of technology, ecological investing, security in cooking — literally food safety as a domain)
+- Inputs 21-30: Explicitly revisit earlier themes from new angles (food safety regulations, investment portfolio rebalancing, forest fire recovery, online education platforms, acoustic architecture, medical AI, competitive gaming meta, philosophy of technology, ecological investing, security in cooking, meaning food safety as a domain)
 - Inputs 31-40: Increasingly abstract/cross-cutting (systems thinking, resilience engineering, information theory, emergence in complex systems, feedback loops, adaptation vs optimization, the role of constraints, time and patience, trust in distributed systems, the paradox of control)
-- Inputs 41-50: Challenge inputs — deliberately contradictory or surprising (why security theater works socially, the case for over-seasoning, index funds beat active management, monocultures that outperform diversity, when rote learning beats discovery, brutalist architecture's advantages, atonal music's clarity, folk medicine that works, games that succeed by being unfair, the utility of dogmatism)
+- Inputs 41-50: Challenge inputs, deliberately contradictory or surprising (why security theater works socially, the case for over-seasoning, index funds beat active management, monocultures that outperform diversity, when rote learning beats discovery, brutalist architecture's advantages, atonal music's clarity, folk medicine that works, games that succeed by being unfair, the utility of dogmatism)
 
-### Phase C: Emergence detection (the proof)
+### Step C: Emergence detection (the proof)
 
 After 50 inputs, run these tests:
 
@@ -203,14 +203,14 @@ Run B: 50 inputs without decay.
 Same 10 queries on both. Blind evaluation of answer quality (have an LLM judge without knowing which system produced which answer).
 
 **Test 5: Rearrangement evidence**
-For concept pairs that appear in chains at both run 10 and run 50: did the intermediate path change? How many rearrangement events occurred? Do rearranged paths show domain shifts (e.g., the connection between "layering" and "trust" used to go through "security" but now goes through "ecology" — a reframing)?
+For concept pairs that appear in chains at both run 10 and run 50: did the intermediate path change? How many rearrangement events occurred? Do rearranged paths show domain shifts (e.g., the connection between "layering" and "trust" used to go through "security" but now goes through "ecology", a reframing)?
 
 **Test 6: Fair budget comparison**
 Give System A (flat memory) the SAME total token budget as System B. System A can use its budget for: multi-pass summarization, explicit cross-referencing between all input pairs, chain-of-thought reasoning about connections, or any other prompt strategy. Both systems answer the same 10 queries. Compare answer quality.
 
 This is the hardest test and the most important. If System A with equal tokens matches System B, the topology adds nothing. If System B wins despite System A having equal resources, the topology's structure is doing real work.
 
-### Phase D: Kill criteria
+### Step D: Kill criteria
 
 | Test | Pass | Fail |
 |------|------|------|

@@ -88,7 +88,7 @@ export class StructuralPruner {
     const chainsToKeep = this.topology.chains.filter(c => c.weight >= threshold);
     const prunedChainCount = chainsBefore - chainsToKeep.length;
     if (prunedChainCount > 0) {
-      // Use applyDecay with rate=0 and threshold to prune — or just replace
+      // Use applyDecay with rate=0 and threshold to prune, or just replace
       // Since we already applied decay above, we just prune by threshold
       this.topology.applyDecay(0, threshold);
     }

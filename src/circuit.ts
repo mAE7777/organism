@@ -295,7 +295,7 @@ export class Circuit {
     }
 
     for (const concept of concepts) {
-      // Step 1: Find target concepts — embedding pre-filter if available, else string overlap
+      // Step 1: Find target concepts (embedding pre-filter if available, else string overlap)
       let targetConcepts: Concept[] = [];
       let embeddingFailed = false;
       if (this.resonance && this.topology.concepts.length > 5) {

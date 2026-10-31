@@ -230,7 +230,7 @@ export class TestRunner {
     const I = testI_rearrangementQuality(this.allRearrangementScores);
     const J = testJ_scaleSimulation();
 
-    // K: would need a separate decompose run with/without signal — return null for now
+    // K needs a separate decompose run with and without the signal, so it is not computed here
     const K = null;
 
     const results: AllTestResults = {

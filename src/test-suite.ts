@@ -5,7 +5,7 @@ import type {
 import { giniCoefficient, computeBetweennessCentrality, computeNetworkMetrics } from './graph-metrics.js';
 import type { Operations, DecomposeResult } from './operations.js';
 
-// Layer 1 (Structural) — Tests A, G
+// Layer 1 (Structural): Tests A, G
 
 export function testA_hubGravity(topology: TopologyState): { gini: number; pass: boolean } {
   const centrality = computeBetweennessCentrality(topology);
@@ -19,7 +19,7 @@ export function testG_networkTransition(topology: TopologyState): { metrics: Net
   return { metrics, pass: metrics.top3PathShare < 0.40 };
 }
 
-// Layer 2 (Semantic) — Tests B, F, I
+// Layer 2 (Semantic): Tests B, F, I
 
 export function testB_semanticEmergence(pathScores: PathScore[]): { avgComposite: number; pass: boolean } {
   if (pathScores.length === 0) return { avgComposite: 0, pass: false };
@@ -37,7 +37,7 @@ export function testI_rearrangementQuality(scores: RearrangementScore[]): { avgG
   return { avgGenuine: avg, pass: avg > 3.0 };
 }
 
-// Layer 3 (Cognitive) — Tests D, K
+// Layer 3 (Cognitive): Tests D, K
 
 export interface DriftResult {
   jaccardRun1: number;
@@ -100,7 +100,7 @@ export function testK_autopoietic(
   return { jaccardDiff: diff, pass: diff > 0.15 };
 }
 
-// Meta — Tests C, E, H, J
+// Meta: Tests C, E, H, J
 
 export function testC_resolutionGrowth(history: number[]): { trend: 'increasing' | 'flat' | 'decreasing'; pass: boolean } {
   if (history.length < 3) return { trend: 'flat', pass: false };
@@ -181,14 +181,14 @@ export function computeVerdict(results: AllTestResults): string {
   const shouldPassCount = Object.values(results.summary.shouldPass).filter(Boolean).length;
 
   if (mustPassAll && shouldPassCount >= 3) {
-    return 'THESIS SUPPORTED — L3 demonstrates sense-making infrastructure';
+    return 'THESIS SUPPORTED: L3 demonstrates sense-making infrastructure';
   } else if (mustPassAll) {
-    return 'PARTIAL — must-pass tests pass but should-pass criteria incomplete';
+    return 'PARTIAL: must-pass tests pass but should-pass criteria incomplete';
   } else {
     const failed = [];
     if (!results.summary.mustPass.B) failed.push('B (semantic emergence)');
     if (!results.summary.mustPass.G) failed.push('G (network shape)');
     if (!results.summary.mustPass.D) failed.push('D (decompose drift)');
-    return `THESIS NOT VALIDATED — failed: ${failed.join(', ')}`;
+    return `THESIS NOT VALIDATED. Failed: ${failed.join(', ')}`;
   }
 }

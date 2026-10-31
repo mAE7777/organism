@@ -60,7 +60,7 @@ export class Runner {
       console.log(`\n--- Input ${runNumber}: ${inputs[i].name} ---`);
 
       if (this.costTracker.isOverBudget) {
-        console.log('BUDGET EXCEEDED — stopping.');
+        console.log('BUDGET EXCEEDED, stopping.');
         break;
       }
 
@@ -87,7 +87,7 @@ export class Runner {
 
     for (let i = 0; i < MVO_QUERIES.length; i++) {
       if (this.costTracker.isOverBudget) {
-        console.log('BUDGET EXCEEDED — stopping queries.');
+        console.log('BUDGET EXCEEDED, stopping queries.');
         break;
       }
 
@@ -279,7 +279,7 @@ export class L2Runner {
       console.log(`\n--- Input ${runNumber}/${inputs.length}: ${inputs[i].name} ---`);
 
       if (costTracker.isOverBudget) {
-        console.log('BUDGET EXCEEDED — stopping.');
+        console.log('BUDGET EXCEEDED, stopping.');
         break;
       }
 
@@ -288,7 +288,7 @@ export class L2Runner {
       const baseResult = await baseline.processInput(inputs[i].content, runNumber);
       console.log(`  → Summary: ${baseResult.summaryLength} chars`);
 
-      // System B — override decay if noDecay flag
+      // System B: override decay if noDecay flag
       console.log('  System B (topology)...');
       const topoResult = await circuit.processInput(inputs[i].content, runNumber);
       console.log(`  → Concepts: ${topoResult.newConcepts}, Chains: ${topoResult.newChains}`);
@@ -347,7 +347,7 @@ export class L2Runner {
 
     for (let i = 0; i < L2_QUERIES.length; i++) {
       if (costTracker.isOverBudget) {
-        console.log('BUDGET EXCEEDED — stopping queries.');
+        console.log('BUDGET EXCEEDED, stopping queries.');
         break;
       }
 
@@ -386,7 +386,7 @@ export class L2Runner {
 
     // Test 1: Emergent transitive paths
     const emergentPaths = discoverEmergentPaths(state, 0.1, 3, 5);
-    console.log(`Test 1 — Unplanted connections: ${emergentPaths.length} multi-hop paths spanning 3+ inputs`);
+    console.log(`Test 1 (unplanted connections): ${emergentPaths.length} multi-hop paths spanning 3+ inputs`);
     for (const p of emergentPaths.slice(0, 10)) {
       console.log(`  ${p.from} → ${p.hops.join(' → ')} → ${p.to} (weight ${p.weight.toFixed(3)}, inputs ${p.sourceInputsSpanned.join(',')})`);
     }
@@ -396,7 +396,7 @@ export class L2Runner {
     // Test 2: Bridge surprise
     const bridges = computeBridgeScores(state);
     const topBridges = bridges.slice(0, 5);
-    console.log(`Test 2 — Bridge surprise: ${bridges.length} bridge concepts detected`);
+    console.log(`Test 2 (bridge surprise): ${bridges.length} bridge concepts detected`);
     for (const b of topBridges) {
       const concept = state.concepts.find((c) => c.id === b.conceptId);
       console.log(`  ${concept?.name ?? b.conceptId}: score ${b.bridgeScore.toFixed(2)}, inputs ${b.uniqueSourceInputs}, domains ${b.uniqueDomains}, chains ${b.chainsThrough}`);
@@ -407,7 +407,7 @@ export class L2Runner {
 
     // Test 3: Identity drift
     const identities = metadata.getAllIdentitySnapshots();
-    console.log(`Test 3 — Identity drift: ${identities.length} identity snapshots`);
+    console.log(`Test 3 (identity drift): ${identities.length} identity snapshots`);
     const checkpoints = [10, 25, 50].map((r) => metadata.getIdentityAt(r)).filter(Boolean);
     for (const snap of checkpoints) {
       console.log(`  Run ${snap!.run}: "${snap!.description.slice(0, 120)}..."`);
@@ -417,7 +417,7 @@ export class L2Runner {
 
     // Test 5: Rearrangement
     const rearrangements = detectRearrangements(metadata.chainHistories);
-    console.log(`Test 5 — Rearrangement: ${rearrangements.length} events`);
+    console.log(`Test 5 (rearrangement): ${rearrangements.length} events`);
     for (const r of rearrangements.slice(0, 5)) {
       console.log(`  ${r.endpoints.join('↔')}: run ${r.fromRun}→${r.toRun} (${r.oldIntermediates.join(',')} → ${r.newIntermediates.join(',')})`);
     }
@@ -479,7 +479,7 @@ export class L2Runner {
       const topologyAnswer = topologyMatch[1].trim();
 
       if (costTracker.isOverBudget) {
-        console.log('BUDGET EXCEEDED — stopping judge.');
+        console.log('BUDGET EXCEEDED, stopping judge.');
         break;
       }
 
@@ -597,9 +597,9 @@ export class L2Runner {
       const test5 = analysis.test5.pass;
 
       if (!test1) {
-        report += `**THESIS NOT VALIDATED.** Test 1 failed — insufficient emergent paths. The topology did not produce connections that no single LLM call was asked to find.\n`;
+        report += `**THESIS NOT VALIDATED.** Test 1 failed: insufficient emergent paths. The topology did not produce connections that no single LLM call was asked to find.\n`;
       } else if (test1 && test3 && test5) {
-        report += `**EMERGENCE DETECTED.** Tests 1, 3, and 5 pass — the topology produces unplanted connections, evolves its identity, and rearranges paths over time. Proceed to Test 6 for practical advantage assessment.\n`;
+        report += `**EMERGENCE DETECTED.** Tests 1, 3, and 5 pass: the topology produces unplanted connections, evolves its identity, and rearranges paths over time. Proceed to Test 6 for practical advantage assessment.\n`;
       } else {
         report += `**PARTIAL.** Some emergence detected but not all structural tests pass. Review individual test results.\n`;
       }
@@ -685,11 +685,11 @@ export class L3Runner {
       console.log(`\n--- Input ${runNumber}/${inputs.length}: ${inputs[i].name} ---`);
 
       if (costTracker.isOverBudget) {
-        console.log('BUDGET EXCEEDED — stopping.');
+        console.log('BUDGET EXCEEDED, stopping.');
         break;
       }
 
-      // Process — wrapped in try/catch so individual input failures don't kill the run
+      // Process, wrapped in try/catch so individual input failures don't kill the run
       let result: L3ProcessResult;
       try {
         result = await circuit.processInput(inputs[i].content, runNumber) as L3ProcessResult;
@@ -952,7 +952,7 @@ export class L3Runner {
 
     for (const query of queries) {
       if (costTracker.isOverBudget) {
-        console.log('BUDGET EXCEEDED — stopping.');
+        console.log('BUDGET EXCEEDED, stopping.');
         break;
       }
 

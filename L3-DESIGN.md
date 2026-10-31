@@ -31,7 +31,7 @@
 OLD: decompose(text) → LM fills {domain, attribute, salience}[] template → concepts
 
 NEW: Two-phase crystallization
-  Phase A — Free thinking:
+  Phase A (free thinking):
     Input: text + topology context (top 5 bridges, recent rearrangements,
            highest-uncertainty regions, current identity)
     Prompt: "Read this text. Given what the topology already knows:
@@ -43,7 +43,7 @@ NEW: Two-phase crystallization
     Model: Sonnet
     Output: freeform thinking text
 
-  Phase B — Structural extraction:
+  Phase B (structural extraction):
     Input: freeform thinking + original text
     Prompt: "Extract concepts and facets from this thinking.
             For each facet:
@@ -60,7 +60,7 @@ NEW: Two-phase crystallization
 
 **Why this fixes hub gravity:** Domain-qualified attributes prevent different-domain concepts from matching on surface words. "Defense in Depth's layering" and "Catenary Distribution's layering" produce different facets, so they don't form a trivial connection through shared attribute text.
 
-**Why crystallization matters:** Phase A forces LM to think RELATIVE TO the topology, not in isolation. Input #20 won't just produce "linguistic structure has frameworks" — it'll produce "linguistic determinism challenges the layering model because linguistic structure is recursive, not stacked."
+**Why crystallization matters:** Phase A forces LM to think RELATIVE TO the topology, not in isolation. Input #20 won't just produce "linguistic structure has frameworks". It will produce "linguistic determinism challenges the layering model because linguistic structure is recursive, not stacked."
 
 **Cost:** +1 Sonnet call per input (~$0.01), +1 Haiku call per input (~$0.001). Roughly 30% increase over current decompose cost.
 
@@ -78,7 +78,7 @@ interface TopologyQuestion {
 }
 ```
 
-Questions participate in the graph. When a future input's decompose naturally addresses an open question, the question gets marked `addressed` — this is a measurable signal of knowledge deepening.
+Questions participate in the graph. When a future input's decompose naturally addresses an open question, the question gets marked `addressed`. That status is a measurable signal of knowledge deepening.
 
 ### Change 2: Antagonistic Hub Suppression
 
@@ -125,7 +125,7 @@ function structuralPrune(topology: TopologyState): PrunerResult {
   for (const group of redundantGroups) {
     const best = group.sort((a, b) => b.weight - a.weight)[0];
     best.weight = Math.min(1.0, best.weight * 1.2); // strengthen survivor
-    // archive the rest, don't delete — they're evidence of path convergence
+    // archive the rest instead of deleting them: they're evidence of path convergence
   }
 
   // 6. Orphan rescue + archive
@@ -138,7 +138,7 @@ function structuralPrune(topology: TopologyState): PrunerResult {
 }
 ```
 
-**Centrality threshold:** Start with top 10% by betweenness centrality. This is an empirical parameter — observe whether hub suppression actually distributes connections or just kills the topology.
+**Centrality threshold:** Start with top 10% by betweenness centrality. This is an empirical parameter. Observe whether hub suppression actually distributes connections or just kills the topology.
 
 **Expected effect on L2 data:** Fermentation and Defense in Depth would get 3x decay on most chains. After 10 more runs, their dominance should drop from 62%/54% to <30%. New bridges should emerge from later inputs.
 
@@ -151,7 +151,7 @@ function structuralPrune(topology: TopologyState): PrunerResult {
 ```typescript
 import { pipeline } from '@xenova/transformers';
 
-// Load once at startup — runs locally, no API calls
+// Load once at startup. Runs locally, no API calls
 const embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
 
 function computeResonance(facetA: Facet, facetB: Facet): number {
@@ -178,7 +178,7 @@ function computeResonance(facetA: Facet, facetB: Facet): number {
 
 **Dependency:** Requires `@xenova/transformers` npm package (~50MB download, runs in Node.js).
 
-### Change 4: Output Redefinition — Structural Signals
+### Change 4: Output Redefinition as Structural Signals
 
 **Problem:** Current output is either raw topology state (for analysis) or LM-generated answers (for queries). Neither represents topology's genuine value.
 
@@ -260,11 +260,11 @@ interface TopologySignal {
 
 **Three output modes:**
 
-1. **`emitSignal()`** — returns TopologySignal after each processInput. Primary output. No LM call.
+1. **`emitSignal()`** returns TopologySignal after each processInput. Primary output. No LM call.
 
-2. **`humanReport(signal)`** — Haiku translates TopologySignal into readable prose. One cheap LM call for presentation only.
+2. **`humanReport(signal)`**: Haiku translates TopologySignal into readable prose. One cheap LM call for presentation only.
 
-3. **`queryWithDirectives(question)`** — Instead of dumping graph data, extracts 3-5 relevant structural signals, has Haiku phrase them as reasoning directives, then Sonnet answers with directives as starting points. This replaces the old query() for cases where an answer is actually needed.
+3. **`queryWithDirectives(question)`**: instead of dumping graph data, extracts 3-5 relevant structural signals, has Haiku phrase them as reasoning directives, then Sonnet answers with directives as starting points. This replaces the old query() for cases where an answer is actually needed.
 
 ### Change 5: Automated Semantic Evaluation
 
@@ -538,7 +538,7 @@ If topology beats RAG-simulated baseline: evidence for scale advantage
 If topology beats full-context baseline: evidence for structural computation advantage
 ```
 
-### Test K: Autopoietic Signal — Does Output Change Input?
+### Test K: Autopoietic Signal (Does Output Change Input?)
 
 **What it measures:** Do the structural signals from TopologySignal actually influence the next processInput cycle?
 
@@ -554,47 +554,47 @@ If topology beats full-context baseline: evidence for structural computation adv
 
 ---
 
-## Implementation Phases
+## Implementation Steps
 
-### Phase 1: Core Fixes (decompose + pruner + resonance)
-
-**Files to modify:**
-- `src/operations.ts` — new decompose prompt (crystallization two-phase)
-- `src/types.ts` — TopologyQuestion, domain-qualified facets, TopologySignal
-- `src/analysis.ts` — add betweenness centrality, articulation points, hub suppression
-- `src/topology.ts` — store questions, differential decay rates
-- `src/resonance.ts` (new) — embedding-based resonance using @xenova/transformers
-
-**Files to create:**
-- `src/signals.ts` — TopologySignal generation, emitSignal()
-- `src/pruner.ts` — Structural Pruner (hub suppression, redundancy merging, orphan handling)
-- `src/graph-metrics.ts` — centrality, clustering coefficient, diameter, articulation points
-
-**Tests:**
-- `tests/decompose-crystallization.test.ts` — verify two-phase decompose produces domain-qualified facets
-- `tests/pruner.test.ts` — verify hub suppression reduces centrality concentration
-- `tests/resonance-embedding.test.ts` — verify embedding resonance finds semantically similar facets that string matching misses
-- `tests/graph-metrics.test.ts` — centrality, articulation points, Gini coefficient
-
-### Phase 2: Signal Output + Automated Evaluation
+### Step 1: Core Fixes (decompose + pruner + resonance)
 
 **Files to modify:**
-- `src/circuit.ts` — processInput returns TopologySignal, query replaced with queryWithDirectives
-- `src/runner.ts` — emit signals, run automated evaluations every 10 runs
+- `src/operations.ts`: new decompose prompt (crystallization two-phase)
+- `src/types.ts`: TopologyQuestion, domain-qualified facets, TopologySignal
+- `src/analysis.ts`: add betweenness centrality, articulation points, hub suppression
+- `src/topology.ts`: store questions, differential decay rates
+- `src/resonance.ts` (new): embedding-based resonance using @xenova/transformers
 
 **Files to create:**
-- `src/evaluator.ts` — automated semantic path scoring, rearrangement evaluation, contradiction detection
-- `src/reporter.ts` — humanReport() from TopologySignal
+- `src/signals.ts`: TopologySignal generation, emitSignal()
+- `src/pruner.ts`: Structural Pruner (hub suppression, redundancy merging, orphan handling)
+- `src/graph-metrics.ts`: centrality, clustering coefficient, diameter, articulation points
 
 **Tests:**
-- `tests/evaluator.test.ts` — mock API for semantic scoring
-- `tests/signals.test.ts` — signal generation, delta computation
+- `tests/decompose-crystallization.test.ts`: verify two-phase decompose produces domain-qualified facets
+- `tests/pruner.test.ts`: verify hub suppression reduces centrality concentration
+- `tests/resonance-embedding.test.ts`: verify embedding resonance finds semantically similar facets that string matching misses
+- `tests/graph-metrics.test.ts`: centrality, articulation points, Gini coefficient
 
-### Phase 3: Test Suite
+### Step 2: Signal Output + Automated Evaluation
+
+**Files to modify:**
+- `src/circuit.ts`: processInput returns TopologySignal, query replaced with queryWithDirectives
+- `src/runner.ts`: emit signals, run automated evaluations every 10 runs
 
 **Files to create:**
-- `src/test-suite.ts` — all 11 tests (A through K) as runnable functions
-- `src/test-runner.ts` — orchestrator that runs relevant tests at appropriate intervals
+- `src/evaluator.ts`: automated semantic path scoring, rearrangement evaluation, contradiction detection
+- `src/reporter.ts`: humanReport() from TopologySignal
+
+**Tests:**
+- `tests/evaluator.test.ts`: mock API for semantic scoring
+- `tests/signals.test.ts`: signal generation, delta computation
+
+### Step 3: Test Suite
+
+**Files to create:**
+- `src/test-suite.ts`: all 11 tests (A through K) as runnable functions
+- `src/test-runner.ts`: orchestrator that runs relevant tests at appropriate intervals
 
 **CLI commands:**
 ```
@@ -608,7 +608,7 @@ run-l3-drift-test               # run decompose drift experiment
 run-l3-scale-test               # run scale simulation
 ```
 
-### Phase 4: 50-Input Run with Continuous Monitoring
+### Step 4: 50-Input Run with Continuous Monitoring
 
 **Protocol:**
 ```
