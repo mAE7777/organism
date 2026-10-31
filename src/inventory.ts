@@ -25,33 +25,36 @@ function loadBoundaryResults(): BoundaryResults | null {
   return JSON.parse(readFileSync(p, 'utf-8'));
 }
 
+// The Test H sheet is scored by hand. Each bridge has a section headed
+// "### Bridge N: <name> | ..." and each emergent path a section headed
+// "### Path N: <name>". Each section holds a line "Your score (1-5): <n>".
 function loadTestHScores(): Map<string, number> {
-  const p = join(RESULTS_DIR, 'test-h-evaluation-cn.md');
+  const p = join(RESULTS_DIR, 'test-h-evaluation.md');
   if (!existsSync(p)) return new Map();
   const content = readFileSync(p, 'utf-8');
   const scores = new Map<string, number>();
 
   // Split by bridge sections and extract scores
-  const sections = content.split(/###\s+桥\s+\d+：/);
+  const sections = content.split(/###\s+Bridge\s+\d+:/);
   for (const section of sections) {
     // Get bridge name from the first line
-    const nameMatch = section.match(/^(.+?)(?:（.+?）)?\s*\|/);
+    const nameMatch = section.match(/^(.+?)(?:\s*\(.+?\))?\s*\|/);
     if (!nameMatch) continue;
     const name = nameMatch[1].trim();
 
     // Get score
-    const scoreMatch = section.match(/你的评分（1-5）：\s*_*(\d)_*/);
+    const scoreMatch = section.match(/Your score \(1-5\):\s*_*(\d)_*/);
     if (scoreMatch) {
       scores.set(name, parseInt(scoreMatch[1], 10));
     }
   }
 
   // Also parse emergent path scores and other sections
-  const pathSections = content.split(/###\s+路径\s+\d+：/);
+  const pathSections = content.split(/###\s+Path\s+\d+:/);
   for (const section of pathSections) {
-    const scoreMatch = section.match(/你的评分（1-5）：\s*_*(\d)_*/);
+    const scoreMatch = section.match(/Your score \(1-5\):\s*_*(\d)_*/);
     if (scoreMatch) {
-      const nameMatch = section.match(/^(.+?)(?:（.+?）)?$/m);
+      const nameMatch = section.match(/^(.+?)(?:\s*\(.+?\))?$/m);
       if (nameMatch) {
         scores.set(`path:${nameMatch[1].trim()}`, parseInt(scoreMatch[1], 10));
       }
