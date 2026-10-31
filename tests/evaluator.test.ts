@@ -103,6 +103,46 @@ describe('findContradictions', () => {
     expect(client.messages.parse).not.toHaveBeenCalled();
   });
 
+  it('attaches each contradiction to the paths of its own pair', async () => {
+    // One diamond a-x-b / a-y-b. Pair 0 is (a, b) through x or y.
+    // Pair 1 is (x, y) through a or b.
+    const chain = (id: string, from: string, to: string, weight: number) => ({
+      id, fromConcept: from, toConcept: to, steps: [], depth: 1, domainsCrossed: [],
+      confidence: 0.8, weight, createdAtRun: 1, lastTraversedRun: 1,
+    });
+    const topology: TopologyState = {
+      concepts: ['a', 'b', 'x', 'y'].map((name, i) => ({ id: `c${i}`, name, facets: [], sourceInput: i + 1 })),
+      chains: [
+        chain('ch1', 'a', 'x', 0.9),
+        chain('ch2', 'x', 'b', 0.9),
+        chain('ch3', 'a', 'y', 0.5),
+        chain('ch4', 'y', 'b', 0.5),
+      ],
+      latentConnections: [],
+      runCount: 4,
+    };
+
+    const client = mockClient();
+    client.messages.parse.mockResolvedValueOnce({
+      parsed_output: {
+        results: [
+          { conceptA: 'a', conceptB: 'b', pathAImplication: '', pathBImplication: '', tension: '', isContradiction: false },
+          { conceptA: 'x', conceptB: 'y', pathAImplication: 'via a', pathBImplication: 'via b', tension: 'opposed', isContradiction: true },
+        ],
+      },
+      usage: { input_tokens: 100, output_tokens: 50 },
+    });
+    const costTracker = new CostTracker('/tmp/organism-test-evaluator-pairs', 100);
+    costTracker.reset();
+
+    const contradictions = await findContradictions(topology, client, costTracker);
+
+    expect(contradictions).toHaveLength(1);
+    expect(contradictions[0].conceptA).toBe('x');
+    const intermediates = [...contradictions[0].pathA.intermediates, ...contradictions[0].pathB.intermediates].sort();
+    expect(intermediates).toEqual(['a', 'b']);
+  });
+
   it('cost tracked per evaluation', async () => {
     const client = mockClient();
     client.messages.parse.mockResolvedValueOnce({

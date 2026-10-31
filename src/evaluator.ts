@@ -198,10 +198,13 @@ For each pair:
     }>;
   };
 
+  // Result i answers "Pair i" in the prompt. Keep that index through the
+  // filter, so each contradiction gets the paths of its own pair.
   return parsed.results
+    .map((r, idx) => ({ ...r, originalIdx: idx }))
     .filter(r => r.isContradiction)
-    .map((r, idx) => {
-      const pair = multiPathPairs[idx];
+    .map(r => {
+      const pair = multiPathPairs[r.originalIdx];
       return {
         conceptA: r.conceptA,
         conceptB: r.conceptB,
