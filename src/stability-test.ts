@@ -14,7 +14,6 @@ interface StabilityInput {
   path: string;
   content: string;
   wordCount: number;
-  source: 'standard' | 'personal';
 }
 
 interface PairMetrics {
@@ -38,7 +37,6 @@ interface RunQuality {
 
 interface InputResult {
   name: string;
-  source: 'standard' | 'personal';
   wordCount: number;
   snapshots: CrystallizationResult[];
   pairMetrics: PairMetrics[];
@@ -62,8 +60,6 @@ interface GlobalResult {
   avgExactFacetJaccard: number;
   avgSemanticFacetJaccard: number;
   avgQuality: number;
-  standardAvg: Record<string, number>;
-  personalAvg: Record<string, number>;
 }
 
 type Verdict = 'STABLE' | 'ERGODIC' | 'UNSTABLE';
@@ -98,11 +94,6 @@ const STANDARD_INPUTS = [
   '25-acoustic-architecture.md',
   '40-paradox-of-control.md',
   '50-utility-of-dogmatism.md',
-];
-
-const PERSONAL_INPUTS = [
-  '03-bread-flavor-engineering.md',
-  '10-personality-integration.md',
 ];
 
 const EMPTY_TOPOLOGY_CONTEXT = {
@@ -336,20 +327,20 @@ function determineVerdict(global: GlobalResult): VerdictResult {
   if (semanticStable && domainStable) {
     return {
       verdict: 'STABLE',
-      reason: 'Semantic overlap and domain distributions are consistent across runs. The decomposition foundation is solid. Proceed to Fork 2-3, D7 Phase 2 can begin. D9 Newman experiment can confirm decomposition as a system advantage.',
+      reason: 'Semantic overlap and domain distributions are consistent across runs. Decomposition is stable, so later experiments can build on a single run.',
     };
   }
 
   if (!semanticStable && highQuality) {
     return {
       verdict: 'ERGODIC',
-      reason: `Decomposition produces different but high-quality results each time (avg quality ${global.avgQuality.toFixed(2)}). This is ergodicity breaking — feature, not bug. Design ensemble methods (multi-run union/intersection). D1 can continue Phase 1 but all results need ensemble verification. D7 Phase 2 blocked until Fork 2 (labeling scheme) is resolved.`,
+      reason: `Decomposition produces different but high-quality results each time (average quality ${global.avgQuality.toFixed(2)}). Treat one run as one sample, and combine several runs (union or intersection) before drawing conclusions from them.`,
     };
   }
 
   return {
     verdict: 'UNSTABLE',
-    reason: `Decomposition is neither stable nor consistently high-quality (semantic name Jaccard ${global.avgSemanticNameJaccard.toFixed(2)}, quality ${global.avgQuality.toFixed(2)}). Foundation has problems. Pause all improvements (D3/D6/D7). Rewrite decompose prompt and run Newman's Objection test. D5 and D2 become the only progressable directions.`,
+    reason: `Decomposition is neither stable nor consistently high quality (semantic name Jaccard ${global.avgSemanticNameJaccard.toFixed(2)}, quality ${global.avgQuality.toFixed(2)}). Fix the decompose prompt before building on its output.`,
   };
 }
 
@@ -371,7 +362,7 @@ function generateReport(result: StabilityResult): string {
   lines.push('# Decomposition Stability Report');
   lines.push('');
   lines.push(`Date: ${result.timestamp}`);
-  lines.push(`Inputs: ${result.inputCount} (${inputs.filter(i => i.source === 'standard').length} standard + ${inputs.filter(i => i.source === 'personal').length} personal)`);
+  lines.push(`Inputs: ${result.inputCount}`);
   lines.push(`Runs per input: ${result.runsPerInput}`);
   lines.push(`Total cost: $${result.totalCost.toFixed(4)}`);
   lines.push('');
@@ -393,32 +384,12 @@ function generateReport(result: StabilityResult): string {
   lines.push(`| M5: Per-Run Quality | ${fmt(global.avgQuality)} | >0.80 | ${statusLabel(global.avgQuality, 0.80)} |`);
   lines.push('');
 
-  // Standard vs Personal comparison
-  const std = global.standardAvg;
-  const pers = global.personalAvg;
-  if (pers.m1 !== undefined) {
-    lines.push('## Standard vs Personal Comparison');
-    lines.push('');
-    lines.push('| Metric | Standard (n=5) | Personal (n=2) | Delta |');
-    lines.push('|--------|---------------|----------------|-------|');
-    const metrics = [
-      ['M1', 'm1'], ['M2', 'm2'], ['M3 (JSD)', 'm3'], ['M4b', 'm4b'], ['M5 (Quality)', 'm5'],
-    ] as const;
-    for (const [label, key] of metrics) {
-      const s = std[key];
-      const p = pers[key];
-      const delta = p - s;
-      lines.push(`| ${label} | ${fmt(s)} | ${fmt(p)} | ${delta >= 0 ? '+' : ''}${fmt(delta)} |`);
-    }
-    lines.push('');
-  }
-
   // Per-input detail
   lines.push('## Per-Input Detail');
   lines.push('');
 
   for (const input of inputs) {
-    lines.push(`### ${input.name} (${input.source}, ${input.wordCount} words)`);
+    lines.push(`### ${input.name} (${input.wordCount} words)`);
     const conceptCounts = input.snapshots.map(s => s.concepts.length).join(', ');
     const facetCounts = input.snapshots.map(s => s.concepts.reduce((sum, c) => sum + c.facets.length, 0)).join(', ');
     lines.push(`Concepts per run: ${conceptCounts}`);
@@ -464,12 +435,10 @@ function generateReport(result: StabilityResult): string {
 
 export interface StabilityTestOptions {
   runsPerInput?: number;
-  includePersonal?: boolean;
 }
 
 export async function runStabilityTest(options: StabilityTestOptions = {}): Promise<void> {
   const runsPerInput = options.runsPerInput ?? 3;
-  const includePersonal = options.includePersonal ?? true;
 
   const rootDir = resolve(import.meta.dirname, '..');
   const resultsDir = join(rootDir, 'results-stability');
@@ -477,7 +446,6 @@ export async function runStabilityTest(options: StabilityTestOptions = {}): Prom
 
   console.log('=== Decomposition Stability Test ===');
   console.log(`Runs per input: ${runsPerInput}`);
-  console.log(`Include personal inputs: ${includePersonal}`);
   console.log('');
 
   // Initialize dependencies
@@ -499,27 +467,12 @@ export async function runStabilityTest(options: StabilityTestOptions = {}): Prom
       path: filepath,
       content,
       wordCount: content.split(/\s+/).filter(Boolean).length,
-      source: 'standard',
     });
-  }
-
-  if (includePersonal) {
-    for (const filename of PERSONAL_INPUTS) {
-      const filepath = join(rootDir, 'inputs-d14', filename);
-      const content = readFileSync(filepath, 'utf-8');
-      inputs.push({
-        name: filename.replace('.md', ''),
-        path: filepath,
-        content,
-        wordCount: content.split(/\s+/).filter(Boolean).length,
-        source: 'personal',
-      });
-    }
   }
 
   console.log(`Loaded ${inputs.length} inputs`);
   for (const input of inputs) {
-    console.log(`  ${input.name} (${input.source}, ${input.wordCount} words)`);
+    console.log(`  ${input.name} (${input.wordCount} words)`);
   }
   console.log('');
 
@@ -570,7 +523,6 @@ export async function runStabilityTest(options: StabilityTestOptions = {}): Prom
       console.log(`  Skipping metrics: only ${validSnapshots.length} valid runs`);
       inputResults.push({
         name: input.name,
-        source: input.source,
         wordCount: input.wordCount,
         snapshots,
         pairMetrics: [],
@@ -618,7 +570,6 @@ export async function runStabilityTest(options: StabilityTestOptions = {}): Prom
 
     const inputResult: InputResult = {
       name: input.name,
-      source: input.source,
       wordCount: input.wordCount,
       snapshots,
       pairMetrics,
@@ -641,17 +592,6 @@ export async function runStabilityTest(options: StabilityTestOptions = {}): Prom
   }
 
   // Compute global results
-  const standardInputs = inputResults.filter(i => i.source === 'standard');
-  const personalInputs = inputResults.filter(i => i.source === 'personal');
-
-  const computeGroupAvg = (group: InputResult[]) => ({
-    m1: avg(group.map(i => i.avgExactNameJaccard)),
-    m2: avg(group.map(i => i.avgSemanticNameJaccard)),
-    m3: avg(group.map(i => i.avgDomainJSD)),
-    m4b: avg(group.map(i => i.avgSemanticFacetJaccard)),
-    m5: avg(group.map(i => i.avgQuality)),
-  });
-
   const global: GlobalResult = {
     avgExactNameJaccard: avg(inputResults.map(i => i.avgExactNameJaccard)),
     avgSemanticNameJaccard: avg(inputResults.map(i => i.avgSemanticNameJaccard)),
@@ -660,8 +600,6 @@ export async function runStabilityTest(options: StabilityTestOptions = {}): Prom
     avgExactFacetJaccard: avg(inputResults.map(i => i.avgExactFacetJaccard)),
     avgSemanticFacetJaccard: avg(inputResults.map(i => i.avgSemanticFacetJaccard)),
     avgQuality: avg(inputResults.map(i => i.avgQuality)),
-    standardAvg: computeGroupAvg(standardInputs),
-    personalAvg: personalInputs.length > 0 ? computeGroupAvg(personalInputs) : {},
   };
 
   const verdict = determineVerdict(global);
@@ -735,8 +673,7 @@ export async function runStabilityTest(options: StabilityTestOptions = {}): Prom
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const runs = parseInt(args.find(a => a.startsWith('--runs='))?.split('=')[1] ?? '3', 10);
-  const noPersonal = args.includes('--no-personal');
-  runStabilityTest({ runsPerInput: runs, includePersonal: !noPersonal }).catch(err => {
+  runStabilityTest({ runsPerInput: runs }).catch(err => {
     console.error(err);
     process.exit(1);
   });

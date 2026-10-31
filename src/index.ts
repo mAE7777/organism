@@ -138,7 +138,6 @@ async function main() {
       const { runStabilityTest } = await import('./stability-test.js');
       await runStabilityTest({
         runsPerInput: parseInt(getArgValue(args, '--runs') ?? '3', 10),
-        includePersonal: !args.includes('--no-personal'),
       });
       break;
     }
@@ -198,9 +197,8 @@ async function main() {
   npx tsx src/index.ts run-l3-fair-judge            # run redesigned fair Judge (Test J)
 
   # Stability test
-  npx tsx src/index.ts run-stability-test              # decomposition stability (7 inputs x 3 runs, ~$0.50)
-  npx tsx src/index.ts run-stability-test --runs 5     # 7 inputs x 5 runs (~$0.80)
-  npx tsx src/index.ts run-stability-test --no-personal # 5 standard inputs only
+  npx tsx src/index.ts run-stability-test              # decomposition stability (5 inputs x 3 runs)
+  npx tsx src/index.ts run-stability-test --runs 5     # 5 inputs x 5 runs
 
   # Diagnostic tests
   npx tsx src/index.ts run-diagnostic-boundary      # capability boundary test (~$0.35)
