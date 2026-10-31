@@ -211,7 +211,8 @@ async function main() {
   # Investigation scripts
   npx tsx src/order-test.ts                         # 10-input order sensitivity test
   npx tsx src/order-test.ts --count 50              # full 50-input order test
-  npx tsx src/prepare-baseline-prompt.ts            # generate fair baseline prompt`);
+  npx tsx src/prepare-baseline-prompt.ts            # generate fair baseline prompt
+  npx tsx src/tension.ts <topology-dir>             # structural tension report for a saved run`);
   }
 }
 
