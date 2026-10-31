@@ -1,6 +1,13 @@
 {
   "name": "organism",
   "version": "0.1.0",
+  "description": "An experiment in graph-structured memory for LLMs: text becomes faceted concepts in a weighted graph that decays and prunes itself, and code traversal finds cross-domain paths.",
+  "private": true,
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mAE7777/organism.git"
+  },
   "type": "module",
   "scripts": {
     "test": "vitest run",

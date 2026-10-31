@@ -1,114 +1,93 @@
 # organism
 
-An experimental system that tests whether AI can build knowledge structures that produce insights a flat-memory LLM cannot. Concepts are decomposed into faceted representations, connected through structural chains, and evolved through decay, pruning, and identity feedback, creating a topology that reorganizes itself as new information arrives.
+organism is an experiment in giving an LLM a memory shaped like a graph instead of a flat list of notes. The question it tests: when new text keeps reshaping that graph, does the graph surface cross-domain connections that the model would not propose if you asked it directly?
 
-The core question: does structural computation over accumulated traces produce genuinely emergent understanding, or is it just expensive prompt engineering?
+Each input text is broken into concepts. Each concept carries facets tagged with a domain, such as `temporal:delayed-feedback`. The model proposes links between concepts. Code then walks the graph and finds longer paths (A to B to C) that no single model call produced. Links decay, hubs are penalized, and bridges between domains are protected, so the graph reorganizes as inputs arrive.
 
-## Architecture
+## How one input is processed
 
-```
-Input text
-  → Decompose (two-phase crystallization: free thinking + structured extraction)
-  → Connect (embedding-guided target selection + LLM chain validation)
-  → Resonance scan (embedding similarity for latent connections)
-  → Structural pruning (hub suppression, bridge protection, orphan handling)
-  → Identity update (self-model fed back into future decomposition)
-  → Signal emission (bridges, emergent paths, contradictions, questions)
-```
+`src/circuit.ts` runs these steps for each input:
 
-Each input produces concepts with domain-qualified facets. Concepts are connected through chains: weighted, typed edges that cross domain boundaries. Transitive paths (A→B→C) are discovered by code traversal, not LLM generation. This is the mechanism for emergence: the topology contains connections no single LLM call produced.
+1. **Decompose.** Claude Sonnet writes free-form notes on what the input adds to the current graph. Claude Haiku then extracts concepts and domain-tagged facets from those notes.
+2. **Connect.** Local embeddings pick candidate link targets, and the model accepts or rejects each link.
+3. **Scan for resonance.** A local `all-MiniLM-L6-v2` model finds similar facets across domains without API calls.
+4. **Prune.** Betweenness centrality sets decay. Hubs decay three times faster and bridges at half speed. Redundant paths merge, and orphan concepts are rescued or archived.
+5. **Update identity.** The system writes a short description of its current bridges and dominant domains. That description goes into the next decompose prompt.
+6. **Emit a signal.** `TopologySignal` lists bridges, emergent paths, rearrangements, and open questions. Building it needs no model call.
 
-### Key components
+## What the experiments showed
 
-- **Crystallization decompose**: Two-phase. Sonnet thinks freely about what's new or challenging relative to the existing topology, then Haiku extracts structured concepts with domain-qualified facets. Prevents hub gravity from generic attributes.
-- **Embedding resonance**: Local `all-MiniLM-L6-v2` model finds semantically similar facets across domains without API calls. Replaces string-matching resonance that was effectively dead in L2.
-- **Structural pruner**: Computes betweenness centrality. Hubs get 3x decay, true bridges get 0.5x decay. Merges redundant paths. Rescues or archives orphans.
-- **Identity loop**: After each run, the system generates a self-description reflecting its current bridge concepts, dominant domains, and recent shifts. This identity feeds into subsequent decompose prompts, creating behavioral drift over time.
-- **Signal output**: Primary output is `TopologySignal`: bridges, emergent paths, rearrangements, contradictions, uncertainty profile, decay report, open questions, and delta from the previous signal. No LLM call required.
+The work ran in three levels. Each level was designed to fix what the previous one exposed.
 
-## Experiment levels
+**Level 1, 10 inputs.** The plumbing worked: 57 concepts and 290 links. Emergence did not show up. Every link was one the model had been asked for, and the graph spent 17 times more tokens than a flat-memory baseline for answers of similar quality. None of the 14 thesis claims was validated. Details are in [`docs/mvo-results.md`](docs/mvo-results.md).
 
-### L1 (MVO): proof of plumbing
+**Level 2, 50 inputs.** Code traversal found 204 paths that no model call produced, and the graph rearranged itself 27 times. One concept sat on 62% of all paths, so the graph was close to a star. Details are in [`docs/level-2-design.md`](docs/level-2-design.md).
 
-10 inputs, A/B test vs flat memory. Proved the engineering works (57 concepts, 290 chains). Did not prove emergence: all connections were LLM-solicited. System B spent 17x more tokens for comparable quality. 0/14 thesis claims validated.
-
-### L2: proving emergence
-
-50 inputs with transitive path discovery, facet resonance, bridge detection, identity loop, aggressive decay, and rearrangement tracking. Proved structural emergence: 204 transitive paths from chain composition, 27 rearrangement events, identity drift confirmed. Hub gravity problem identified (62% of paths through one concept).
-
-### L3: sense-making infrastructure
-
-50 inputs with crystallization decompose, embedding resonance, structural pruning, automated evaluation suite (tests A-K), and signal-driven output.
-
-**Results (50 inputs, $33.59):**
+**Level 3, 50 inputs, $33.59.** Level 3 added two-step decompose, embedding resonance, and structural pruning, and measured them with an evaluation suite of eleven tests. Test K was not run. The design is in [`L3-DESIGN.md`](L3-DESIGN.md).
 
 | Test | Result | Score |
 |------|--------|-------|
-| B: Semantic Emergence | PASS | 3.66/5 avg composite |
-| G: Network Shape | PASS | 6.5% top-3 path share |
-| D: Decompose Drift | PASS | 0.048 Jaccard (significant drift) |
-| H: Human Validation | PASS | 4.17/5 avg |
-| E: Question Lifecycle | PASS | 41.5% resolution rate |
+| B: Semantic emergence | PASS | 3.66/5 average composite |
+| G: Network shape | PASS | 6.5% top-3 path share |
+| D: Decompose drift | PASS | 0.048 Jaccard |
+| H: Human validation | PASS | 4.17/5 average |
+| E: Question lifecycle | PASS | 41.5% resolution rate |
 | F: Contradictions | PASS | 19 found |
-| A: Hub Gravity | FAIL | 0.641 Gini (need <0.5) |
-| C: Resolution Growth | FAIL | decreasing trend |
-| I: Rearrangement Quality | FAIL | 2.03/5 avg genuine |
-| J: Scale Simulation | FAIL | topology 1, baseline 4 |
+| A: Hub concentration | FAIL | 0.641 Gini (target below 0.5) |
+| C: Resolution growth | FAIL | decreasing trend |
+| I: Rearrangement quality | FAIL | 2.03/5 average |
+| J: Scale simulation | FAIL | graph 1, baseline 4 |
 
-Must-pass tests (B, G, D) all pass. The topology produces semantically meaningful emergent paths, distributes connections beyond a star graph, and genuinely changes how it decomposes over time.
+The three must-pass tests in the design (B, G, and D) passed. Hub concentration and rearrangement quality still failed.
 
-### Critical finding: path dependence
+### Input order changes the result
 
-The same 10 inputs processed in different order produce **0% bridge overlap** (Jaccard = 0.0). The topology constructs path-dependent structural narratives, not invariant corpus properties. Both orderings' bridges score well with human evaluators — the structures are useful but arbitrary with respect to sequence.
+Running the same 10 inputs in two different orders produced bridges with no names in common (Jaccard 0.0). Bridges from both orders scored well in human review. The graph records a story that depends on the order of its inputs. It does not recover a fixed property of the inputs.
 
-### The text-output evaluation problem
+### The graph loses when it has to write prose
 
-Test J (LLM essay comparison) fails because it collapses structural computation into a text-generation task where Claude with full context naturally dominates. Test H (human validation of structures directly) scores 4.17/5. The topology's value is in the structural artifacts themselves, not their translation to prose.
+In Test J, a model that wrote answers from the graph lost to the same model with every input in its context. Rated directly as structures, the same bridges averaged 4.17 out of 5 in human review (Test H). Whatever value the graph has is in the structures, not in prose generated from them.
 
-## Usage
+## Status
+
+Level 3 is complete. Three questions are open:
+
+- Does the graph find connections that a stronger model cannot reach by itself?
+- Are order-dependent structures useful across many orderings, or only in the two runs tested?
+- Can the cost drop enough to matter? A full Level 3 run with evaluation cost $35.71, and the connect step is about half of that.
+
+## Run it
+
+Put an `ANTHROPIC_API_KEY` in `.env` (see `.env.example`), then:
 
 ```sh
 npm install
-```
-
-Requires `ANTHROPIC_API_KEY` in `.env`.
-
-```sh
 npx tsx src/index.ts run-l3                 # 50-input run
-npx tsx src/index.ts run-l3 --resume        # resume from last input
-npx tsx src/index.ts run-l3-evaluate        # automated test suite (A-K)
-
-npm test                                    # unit tests (vitest, 163 total)
+npx tsx src/index.ts run-l3 --resume        # resume from the last completed input
+npx tsx src/index.ts run-l3-evaluate        # evaluation suite
+npx tsx src/tension.ts topology-l3          # structural tension report for a finished run
+npm test                                    # 175 unit tests (vitest)
 ```
+
+`npx tsx src/index.ts` with no command lists every command. The tension report reads `state.json` and `history.json` from a run's topology folder. It reports which edges and concepts carry the most negative Forman-Ricci curvature, and whether metrics across the run history show early-warning signs of a transition.
 
 ## Project structure
 
 ```
 src/
   index.ts          CLI entry point
-  circuit.ts        Per-input processing pipeline
-  operations.ts     LLM calls (decompose, connect, compare)
-  topology.ts       State management (concepts, chains, decay)
+  circuit.ts        Per-input processing
+  operations.ts     Model calls (decompose, connect, compare)
+  topology.ts       Graph state (concepts, links, decay)
   resonance.ts      Local embedding resonance
   pruner.ts         Structural pruning (centrality, decay, merges)
-  identity.ts       Self-model generation and feedback
+  identity.ts       Self-description and feedback
   signals.ts        TopologySignal assembly
-  test-suite.ts     Automated evaluation tests (A-K)
-  ...               Additional modules (runner, judge, metrics, reporting)
+  test-suite.ts     Evaluation tests A to K
+  tension.ts        Curvature and early-warning report over a saved run
+  ...               Runner, judge, metrics, and reporting
 inputs/             50 input essays across domains
-topology/           Topology history from the L3 run
+topology/           Saved run history: chain versions, identity snapshots, bridge scores
 tests/              Unit tests (vitest)
-docs/               Design docs and experiment results
+docs/               Design notes and results for Levels 1 and 2
 ```
-
-## Cost
-
-L3 full run (50 inputs + evaluation + scale test): ~$35.71. The connect operation dominates (~50% of spend). Embedding resonance is free (local model).
-
-## Status
-
-L3 experiment complete. Structural computation works — emergent paths, bridge detection, identity drift, question lifecycle all validated. Text-output evaluation fails to capture the topology's value. Path dependence is real but both orderings produce human-validated useful structures.
-
-Open questions: whether the topology finds things an LLM fundamentally cannot (capability boundary), whether path-dependent structures are consistently useful across many orderings, and whether semantic similarity (not string matching) would show convergence between different run orders.
-
-Developed privately in early 2026. History filtered from the private original; personal and unrelated material removed.
